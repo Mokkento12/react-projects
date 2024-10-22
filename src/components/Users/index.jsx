@@ -1,3 +1,4 @@
+// Users.js
 import React from "react";
 import { Skeleton } from "./Skeleton";
 import { User } from "./User";
@@ -7,9 +8,10 @@ export const Users = ({
   isLoading,
   searchValue,
   onChangeSearchValue,
+  invites,
+  onClickInvite,
+  onClickSendInvites,
 }) => {
-  console.log(searchValue);
-
   return (
     <>
       <div className="search">
@@ -33,23 +35,28 @@ export const Users = ({
         <ul className="users-list">
           {items
             .filter((obj) => {
-              const fullName = (
-                obj.first_name +
-                " " +
-                obj.last_name
-              ).toLowerCase(); // добавлен пробел между именем и фамилией
-
+              const fullName =
+                `${obj.first_name} ${obj.last_name}`.toLowerCase();
               return (
                 fullName.includes(searchValue.toLowerCase()) ||
                 obj.email.toLowerCase().includes(searchValue.toLowerCase())
               );
             })
             .map((obj) => (
-              <User key={obj.id} {...obj} />
+              <User
+                isInvited={invites.includes(obj.id)}
+                key={obj.id}
+                {...obj}
+                onClickInvite={() => onClickInvite(obj.id)} // передача функции
+              />
             ))}
         </ul>
       )}
-      <button className="send-invite-btn">Отправить приглашение</button>
+      {invites.length > 0 && (
+        <button className="send-invite-btn" onClick={onClickSendInvites}>
+          Отправить приглашение
+        </button>
+      )}
     </>
   );
 };
