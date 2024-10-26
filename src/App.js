@@ -22,16 +22,19 @@ function App() {
       });
   }, []);
 
+  const convertPrices = (value, from, to) => {
+    const result = (value / rates[from]) * rates[to];
+    return result.toFixed(2);
+  };
+
   const onChangeFromPrice = (value) => {
-    const result = (value / rates[fromCurrency]) * rates[toCurrency];
     setFromPrice(value);
-    setToPrice(result.toFixed(2));
+    setToPrice(convertPrices(value, fromCurrency, toCurrency));
   };
 
   const onChangeToPrice = (value) => {
-    const result = (value / rates[toCurrency]) * rates[fromCurrency];
     setToPrice(value);
-    setFromPrice(result.toFixed(2));
+    setFromPrice(convertPrices(value, toCurrency, fromCurrency));
   };
 
   const handleFocus = (setter) => (e) => {
@@ -46,12 +49,24 @@ function App() {
     }
   };
 
+  const handleCurrencyChange = (setter, currency, value, otherCurrency) => {
+    setter(currency);
+    const newValue = convertPrices(value, currency, otherCurrency);
+    if (setter === setFromCurrency) {
+      setToPrice(newValue);
+    } else {
+      setFromPrice(newValue);
+    }
+  };
+
   return (
     <div className="App">
       <Block
         value={fromPrice}
         currency={fromCurrency}
-        onChangeCurrency={setFromCurrency}
+        onChangeCurrency={(currency) =>
+          handleCurrencyChange(setFromCurrency, currency, fromPrice, toCurrency)
+        }
         onChangeValue={onChangeFromPrice}
         onFocus={handleFocus(setFromPrice)}
         onBlur={handleBlur(setFromPrice)}
@@ -60,7 +75,9 @@ function App() {
       <Block
         value={toPrice}
         currency={toCurrency}
-        onChangeCurrency={setToCurrency}
+        onChangeCurrency={(currency) =>
+          handleCurrencyChange(setToCurrency, currency, toPrice, fromCurrency)
+        }
         onChangeValue={onChangeToPrice}
         onFocus={handleFocus(setToPrice)}
         onBlur={handleBlur(setToPrice)}
