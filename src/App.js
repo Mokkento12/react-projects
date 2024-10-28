@@ -3,6 +3,7 @@ import { Collection } from "./Collection";
 import "./index.scss";
 
 function App() {
+  const [searchValue, setSearchValue] = React.useState("");
   const [collections, setCollections] = React.useState([]);
 
   React.useEffect(() => {
@@ -27,13 +28,22 @@ function App() {
           <li>Архитектура</li>
           <li>Города</li>
         </ul>
-        <input className="search-input" placeholder="Поиск по названию" />
+        <input
+          value={searchValue}
+          onChange={(e) => setSearchValue(e.target.value)}
+          className="search-input"
+          placeholder="Поиск по названию"
+        />
       </div>
       <div className="content">
         {collections &&
-          collections.map((obj, index) => (
-            <Collection key={index} name={obj.name} images={obj.photos} />
-          ))}
+          collections
+            .filter((obj) =>
+              obj.name.toLowerCase().includes(searchValue.toLowerCase())
+            )
+            .map((obj, index) => (
+              <Collection key={index} name={obj.name} images={obj.photos} />
+            ))}
       </div>
       <ul className="pagination">
         <li>1</li>
