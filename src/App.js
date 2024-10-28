@@ -2,31 +2,54 @@ import React from "react";
 import { Collection } from "./Collection";
 import "./index.scss";
 
+const cats = [
+  { name: "Все" },
+  { name: "Море" },
+  { name: "Горы" },
+  { name: "Архитектура" },
+  { name: "Города" },
+];
+
 function App() {
+  const [categoryId, setCategoryId] = React.useState(0);
+  const [isLoading, setIsLoading] = React.useState(true);
   const [searchValue, setSearchValue] = React.useState("");
   const [collections, setCollections] = React.useState([]);
+  const [error, setError] = React.useState(null);
 
   React.useEffect(() => {
-    fetch("https://671f20901dfc42991984070b.mockapi.io/photo_collection")
+    setIsLoading(true);
+    setError(null);
+    fetch(
+      `https://671f20901dfc42991984070b.mockapi.io/photo_collection?${
+        categoryId ? `category=${categoryId}` : ""
+      }`
+    )
       .then((res) => res.json())
       .then((json) => {
         setCollections(json);
       })
       .catch((err) => {
-        console.warn("Error!");
-      });
-  }, []);
+        console.warn("Error fetching data:", err);
+        setError("Не удалось загрузить данные. Попробуйте позже.");
+      })
+      .finally(() => setIsLoading(false));
+  }, [categoryId]);
 
   return (
     <div className="App">
       <h1>Моя коллекция фотографий</h1>
       <div className="top">
         <ul className="tags">
-          <li className="active">Все</li>
-          <li>Горы</li>
-          <li>Море</li>
-          <li>Архитектура</li>
-          <li>Города</li>
+          {cats.map((obj, i) => (
+            <li
+              onClick={() => setCategoryId(i)}
+              className={categoryId === i ? "active" : ""}
+              key={obj.name}
+            >
+              {obj.name}
+            </li>
+          ))}
         </ul>
         <input
           value={searchValue}
@@ -36,14 +59,18 @@ function App() {
         />
       </div>
       <div className="content">
-        {collections &&
+        {error && <p className="error">{error}</p>}
+        {isLoading ? (
+          <h2>Идет загрузка...</h2>
+        ) : (
           collections
             .filter((obj) =>
               obj.name.toLowerCase().includes(searchValue.toLowerCase())
             )
-            .map((obj, index) => (
-              <Collection key={index} name={obj.name} images={obj.photos} />
-            ))}
+            .map((obj) => (
+              <Collection key={obj.id} name={obj.name} images={obj.photos} />
+            ))
+        )}
       </div>
       <ul className="pagination">
         <li>1</li>
